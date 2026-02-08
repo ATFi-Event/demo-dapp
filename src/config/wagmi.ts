@@ -8,7 +8,7 @@ export const config = createConfig({
     injected(),
   ],
   transports: {
-    [base.id]: http('https://mainnet.base.org'),
+    [base.id]: http(import.meta.env.VITE_ALCHEMY_RPC_URL || 'https://mainnet.base.org'),
     [baseSepolia.id]: http('https://sepolia.base.org'),
   },
 });
