@@ -41,6 +41,72 @@ export function EventDetail({ vaultAddress, onBack }: EventDetailProps) {
     fetchData();
   }, [sdk, vaultAddress, address]);
 
+  const isOwner = event?.owner.toLowerCase() === address?.toLowerCase();
+
+  const [participants, setParticipants] = useState<ParticipantInfo[]>([]);
+  const [participantsLoading, setParticipantsLoading] = useState(false);
+
+  // Fetch participants if owner
+  useEffect(() => {
+    async function fetchParticipants() {
+      if (!sdk || !vaultAddress || !isOwner) return;
+      try {
+        setParticipantsLoading(true);
+        const list = await sdk.getParticipants(vaultAddress as Address);
+        setParticipants(list);
+      } catch (e) {
+        console.error("Failed to fetch participants", e);
+      } finally {
+        setParticipantsLoading(false);
+      }
+    }
+    
+    if (event && isOwner) {
+        fetchParticipants();
+    }
+  }, [sdk, vaultAddress, isOwner, event]);
+
+  const handleVerify = async (participantAddress: Address) => {
+    if (!sdk || isReadOnly) return;
+    
+    setError(null);
+    setActionStatus('Simulating verification...');
+    
+    try {
+      // Use verifyParticipant (singular wrapper if I added it, or batch with 1 param)
+      // I only have verifyParticipant (batch) in SDK type definition typically or verify?
+      // SDK has 'verifyParticipant' taking { participants: Address[] } 
+      const action = await sdk.verifyParticipant({ 
+          vaultAddress: vaultAddress as Address,
+          participants: [participantAddress]
+      });
+
+      if (!action.simulation.success) {
+         setError(action.simulation.error?.message || 'Verification failed');
+         setActionStatus('');
+         return;
+      }
+      
+      setActionStatus('Confirm Verify...');
+      await action.execute({
+        onSubmitting: () => setActionStatus('Verifying...'),
+        onSubmitted: (hash) => setActionStatus(`TX: ${hash.slice(0, 10)}...`),
+        onConfirming: () => setActionStatus('Confirming...'),
+      });
+      
+      setActionStatus('Verified!');
+      // Refresh list
+      const list = await sdk.getParticipants(vaultAddress as Address);
+      setParticipants(list);
+      setTimeout(() => setActionStatus(''), 1500);
+
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed';
+      setError(errorMessage);
+      setActionStatus('');
+    }
+  };
+
   const handleRegister = async () => {
     if (!sdk || isReadOnly) return;
 
@@ -197,7 +263,6 @@ export function EventDetail({ vaultAddress, onBack }: EventDetailProps) {
     );
   }
 
-  const isOwner = address?.toLowerCase() === event.owner.toLowerCase();
   const progress = (event.currentParticipants / event.maxParticipants) * 100;
 
   return (
@@ -302,6 +367,66 @@ export function EventDetail({ vaultAddress, onBack }: EventDetailProps) {
               </div>
             </div>
           </div>
+          
+          {/* Participant Management (Owner Only) */}
+          {isOwner && (
+             <div className="bg-[#1a1a24] border border-[#2a2a3a] rounded-xl p-6 mt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold">Participants ({event.currentParticipants})</h3>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="text-xs text-indigo-400 hover:text-white"
+                  >
+                    Refresh
+                  </button>
+                </div>
+
+                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                  {participantsLoading ? (
+                     <p className="text-sm text-gray-500 text-center py-4">Loading participants...</p>
+                  ) : participants.length === 0 ? (
+                     <p className="text-sm text-gray-500 text-center py-4">No participants yet</p>
+                  ) : (
+                    participants.map((p) => (
+                      <div key={p.address} className="flex items-center justify-between bg-[#12121a] p-3 rounded-lg border border-[#2a2a3a]">
+                        <div className="flex flex-col">
+                           <span className="text-sm font-mono text-gray-300">
+                             {p.address.slice(0, 6)}...{p.address.slice(-4)}
+                           </span>
+                           <div className="flex gap-2 mt-1">
+                             <span className={`text-[10px] px-1.5 py-0.5 rounded border ${p.hasStaked ? 'border-green-500/30 text-green-400' : 'border-gray-700 text-gray-500'}`}>
+                               Staked
+                             </span>
+                             {p.isVerified && (
+                               <span className="text-[10px] px-1.5 py-0.5 rounded border border-blue-500/30 text-blue-400">
+                                 Verified
+                               </span>
+                             )}
+                             {p.hasClaimed && (
+                               <span className="text-[10px] px-1.5 py-0.5 rounded border border-purple-500/30 text-purple-400">
+                                 Claimed
+                               </span>
+                             )}
+                           </div>
+                        </div>
+                        
+                        {!p.isVerified && p.hasStaked && (
+                          <button
+                            onClick={() => handleVerify(p.address)}
+                            disabled={isReadOnly || !!actionStatus || !event.stakingOpen} 
+                            // Verify usually happens AFTER event started? Or anytime?
+                            // Contract says: always allowed if staked.
+                            className="bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/50 text-xs font-medium px-3 py-1.5 rounded transition-colors"
+                          >
+                            Verify
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+             </div>
+          )}
         </div>
 
         {/* Actions Sidebar */}
