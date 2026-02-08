@@ -18,8 +18,8 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2(@tanstack/query-core@5.90.20)(@types/react@19.2.13)(ox@0.11.3(typescript@5.9.3)(zod@4.3.6))(react@19.2.4)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.4))(viem@2.45.1(typescript@5.9.3)(zod@4.3.6))
       atfi:
-        specifier: 1.1.1
-        version: 1.1.1(react@19.2.4)(typescript@5.9.3)(zod@4.3.6)
+        specifier: 1.1.2
+        version: 1.1.2(react@19.2.4)(typescript@5.9.3)(zod@4.3.6)
       react:
         specifier: ^19.2.0
         version: 19.2.4
@@ -808,8 +808,8 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  atfi@1.1.1:
-    resolution: {integrity: sha512-SotCYHJJGJm+pPjxg+QoftHjt0qKa0JPg90KRnFBWad+zuIEvzuOCfPbSqx9DqiOAvmFKhnwJzg0P6YXaUVTaw==}
+  atfi@1.1.2:
+    resolution: {integrity: sha512-JAsx5phatdlNGgU5escFO/WNVUEcdq3Uj869ARZwSXrq7RoDPo+Bs1GHMu2Vg8mMfpQcPBFCSe3Wgxma467vng==}
     peerDependencies:
       react: '>=17.0.0'
     peerDependenciesMeta:
@@ -2104,7 +2104,7 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  atfi@1.1.1(react@19.2.4)(typescript@5.9.3)(zod@4.3.6):
+  atfi@1.1.2(react@19.2.4)(typescript@5.9.3)(zod@4.3.6):
     dependencies:
       viem: 2.45.1(typescript@5.9.3)(zod@4.3.6)
     optionalDependencies:
