@@ -47,29 +47,26 @@ export function CreateEventModal({ onClose }: CreateEventModalProps) {
       setSimulation(action.simulation);
 
       if (action.simulation.success) {
-        setExecuteAction(() => async () => {
-          setStep('executing');
-          setStatus('Waiting for wallet...');
+        setStep('executing');
+        setStatus('Waiting for wallet...');
 
-          try {
-            const result = await action.execute({
-              onSubmitting: () => setStatus('Confirm in wallet...'),
-              onSubmitted: (hash) => setStatus(`TX submitted: ${hash.slice(0, 10)}...`),
-              onConfirming: () => setStatus('Waiting for confirmation...'),
-            });
+        try {
+          const result = await action.execute({
+            onSubmitting: () => setStatus('Confirm in wallet...'),
+            onSubmitted: (hash) => setStatus(`TX submitted: ${hash.slice(0, 10)}...`),
+            onConfirming: () => setStatus('Waiting for confirmation...'),
+          });
 
-            setStatus(`Event created! Vault: ${result.vaultAddress.slice(0, 10)}...`);
-            setTimeout(() => {
-              onClose();
-              window.location.reload();
-            }, 2000);
-          } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Transaction failed';
-            setError(errorMessage);
-            setStep('preview');
-          }
-        });
-        setStep('preview');
+          setStatus(`Event created! Vault: ${result.vaultAddress.slice(0, 10)}...`);
+          setTimeout(() => {
+            onClose();
+            window.location.reload();
+          }, 2000);
+        } catch (err: unknown) {
+          const errorMessage = err instanceof Error ? err.message : 'Transaction failed';
+          setError(errorMessage);
+          setStep('form'); // Go back to form on error
+        }
       } else {
         setError(action.simulation.error?.message || 'Simulation failed');
       }
@@ -173,7 +170,7 @@ export function CreateEventModal({ onClose }: CreateEventModalProps) {
                 disabled={!stakeAmount || !maxParticipants || isReadOnly}
                 className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-lg transition-colors"
               >
-                {status || 'Preview'}
+                {status || 'Create Event'}
               </button>
             </div>
           )}
