@@ -413,7 +413,7 @@ export function EventDetail({ vaultAddress, onBack }: EventDetailProps) {
                         {!p.isVerified && p.hasStaked && (
                           <button
                             onClick={() => handleVerify(p.address)}
-                            disabled={isReadOnly || !!actionStatus || !event.stakingOpen} 
+                            disabled={isReadOnly || !!actionStatus} 
                             // Verify usually happens AFTER event started? Or anytime?
                             // Contract says: always allowed if staked.
                             className="bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/50 text-xs font-medium px-3 py-1.5 rounded transition-colors"
