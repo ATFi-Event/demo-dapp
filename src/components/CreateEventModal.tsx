@@ -28,7 +28,7 @@ export function CreateEventModal({ onClose }: CreateEventModalProps) {
   } | null>(null);
 
   // Execute function from action
-  const [executeAction, setExecuteAction] = useState<(() => Promise<void>) | null>(null);
+  const [executeAction] = useState<(() => Promise<void>) | null>(null);
 
   const handlePreview = async () => {
     if (!sdk || isReadOnly) return;
