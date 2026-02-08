@@ -51,18 +51,26 @@ export function EventDetail({ vaultAddress, onBack }: EventDetailProps) {
       const action = await sdk.register({ vaultAddress: vaultAddress as Address });
 
       if (!action.simulation.success) {
-        setError(action.simulation.error?.message || 'Cannot register');
-        setActionStatus('');
-        return;
+        // If approval needed, SDK auto-handles it in execute, so simulation should be success OR we need to suppress needsApproval error?
+        // Wait, _simulateRegister still returns needsApproval.
+        // If needsApproval is true, simulation success is FALSE in my previous edit.
+        // I need to change _simulateRegister to return success: TRUE even if needsApproval is true, 
+        // OR update this component to proceed even if success is false BUT needsApproval is true.
+        // Let's update component to proceed if needsApproval is true.
+        if (action.simulation.error && !action.simulation.needsApproval) {
+             setError(action.simulation.error.message);
+             setActionStatus('');
+             return;
+        }
       }
 
-      setActionStatus('Confirm in wallet...');
+      setActionStatus('Please confirm transactions...');
       await action.execute({
-        onApproving: () => setActionStatus('Approving token...'),
-        onApproved: () => setActionStatus('Token approved!'),
-        onSubmitting: () => setActionStatus('Submitting...'),
+        onApproving: () => setActionStatus('Approving token (1/2)...'),
+        onApproved: () => setActionStatus('Approval submitted...'),
+        onSubmitting: () => setActionStatus('Registering (2/2)...'),
         onSubmitted: (hash) => setActionStatus(`TX: ${hash.slice(0, 10)}...`),
-        onConfirming: () => setActionStatus('Confirming...'),
+        onConfirming: () => setActionStatus('Waiting for confirmation...'),
       });
 
       setActionStatus('Registered!');
